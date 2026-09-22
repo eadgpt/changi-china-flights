@@ -90,6 +90,18 @@ h1 b{color:var(--arc)}
 .sub{margin:6px 0 0;color:var(--ink-2);font-size:14px}
 .p-body{min-width:0;overflow-x:hidden;overflow-y:auto;padding:4px 18px 18px;display:flex;flex-direction:column;gap:0}
 #detail{margin-top:14px}
+#detail.float{position:fixed;margin:0;top:calc(16px + env(safe-area-inset-top,0px));right:16px;width:380px;max-width:calc(100vw - 32px);
+  max-height:calc(100vh - 32px);overflow-y:auto;box-sizing:border-box;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:var(--shadow);border-radius:14px;z-index:6;padding:14px 16px}
+body[data-side="right"] #detail.float{right:auto;left:16px}
+#detail.float .d-top,#detail.float h2{cursor:grab}
+#detail.float.dragging{opacity:.92}
+#detail.float.dragging .d-top{cursor:grabbing}
+.pill.soon-p{border-color:var(--arc);color:var(--arc)}
+.pill.via-p{border-style:dashed;border-color:var(--ink-2);color:var(--ink)}
+.via-box{font-size:13px;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;color:var(--ink-2)}
+.via-box b{color:var(--ink)}
+.dy-unk{font-size:12px;color:var(--ink-2)}
 .sec{padding:14px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
 .sec:last-of-type{border-bottom:0}
 .sec-h{display:flex;align-items:baseline;gap:8px}
@@ -286,7 +298,7 @@ body[data-side="right"] #hint{right:auto;left:16px}
       <div class="sec-h"><button class="sec-tg" type="button" aria-expanded="true"><span class="sec-t">Cities</span><span class="sec-n">by region · nearest first</span><i class="chev"></i></button></div>
       <div class="sec-b"><div class="list" id="list"></div></div>
     </section>
-    <p class="src">Routes from the airlines-and-destinations list on <a href="https://en.wikipedia.org/wiki/Changi_Airport#Airlines_and_destinations" target="_blank" rel="noopener">Wikipedia</a>, 22 Sep 2026. Hong Kong, Macau and Taiwan not counted. Flights per week from flightsfrom.com timetables (non-stop), 22 Sep 2026. A few routes stop on the way. Flight times are rough guesses from distance.</p>
+    <p class="src">Routes from the airlines-and-destinations list on <a href="https://en.wikipedia.org/wiki/Changi_Airport#Airlines_and_destinations" target="_blank" rel="noopener">Wikipedia</a>, 22 Sep 2026. Hong Kong, Macau and Taiwan not counted. Flights per week from flightsfrom.com timetables (non-stop), 22 Sep 2026. Dashed lines are one-stop flights (same plane, via another Chinese city), from airline launch news. Flight times are rough guesses from distance.</p>
   </div>
 </aside>
 <button id="showPanel" type="button" hidden>Show panel</button>
@@ -316,7 +328,7 @@ const CITIES = [
  ["Jinan","济南",117.00,36.65,"TNA",["Shandong Airlines"]],
  ["Kunming","昆明",102.83,24.88,"KMG",["China Eastern","Scoot"]],
  ["Lanzhou","兰州",103.83,36.06,"LHW",["Hainan Airlines"]],
- ["Lhasa","拉萨",91.11,29.65,"LXA",["West Air"],"Likely stops on the way."],
+ ["Lhasa","拉萨",91.11,29.65,"LXA",["West Air"]],
  ["Nanchang","南昌",115.86,28.68,"KHN",["China Eastern"]],
  ["Nanjing","南京",118.80,32.06,"NKG",["China Eastern","Scoot","XiamenAir"],"XiamenAir starts 24 Sep 2026."],
  ["Nanning","南宁",108.37,22.82,"NNG",["Scoot"]],
@@ -333,7 +345,7 @@ const CITIES = [
  ["Xi'an","西安",108.94,34.34,"XIY",["China Eastern","Scoot"]],
  ["Xiamen","厦门",118.09,24.48,"XMN",["Singapore Airlines","XiamenAir"]],
  ["Yichang","宜昌",111.29,30.69,"YIH",["Hainan Airlines"]],
- ["Yinchuan","银川",106.23,38.49,"INC",["9 Air"],"Stops in Guangzhou on the way."],
+ ["Yinchuan","银川",106.23,38.49,"INC",["9 Air"]],
  ["Zhangjiajie","张家界",110.48,29.12,"DYG",["Loong Air"]],
  ["Zhengzhou","郑州",113.63,34.75,"CGO",["Scoot"]],
 ];
@@ -373,7 +385,7 @@ const AIRPORTS={
 const SCHED={
  PEK:{a:[["Air China","3",null,"1111111"],["Singapore Airlines","3",null,"1111111"]],nos:"CA890 CA970 CA976 SQ800 SQ802 SQ806"},
  PKX:{a:[["China Eastern","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],x:[["China Southern","2024-10-26"]],nos:"MU5032 SQ810"},
- CGQ:{a:[]},
+ CGQ:{via:"HAK",a:[["Hainan Airlines",null,null,"???????"]],nos:"HU448",src:"Airpaz / Trip.com listing"},
  CSX:{a:[["Scoot","1",null,"1111011"],["XiamenAir","1",null,"1101010"]],x:[["China Southern","2026-07-31"],["China Eastern","2026-03-27"]],nos:"MF8740 TR124"},
  TFU:{a:[["Sichuan Airlines","2",null,"1111111"],["Air China","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],nos:"3U3910 3U3920 CA404 SQ842 SQ846"},
  CKG:{a:[["West Air","1",null,"1111111"],["Air China","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"],["Chongqing Airlines",null,null,"uuuuuuu","2026-10-25"]],x:[["China Southern","2025-12-13"]],nos:"CA490 OQ2096 PN6426 PN6444 SQ818"},
@@ -382,12 +394,13 @@ const SCHED={
  KWE:{a:[["Tianjin Airlines","1",null,"0110101"],["Scoot",null,null,"0u0u0u0","2026-10-26"]],nos:"GS7964 TR130"},
  HAK:{a:[["Hainan Airlines","2–3",null,"1111111"],["Scoot","1",null,"1110101"]],x:[["Jetstar Asia","2025-04-30"]],nos:"HU448 HU460 HU748 HU7910 TR118"},
  HGH:{a:[["Scoot","1",null,"1111111"],["XiamenAir","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"],["China Eastern","1",null,"1011001"]],x:[["Loong Air","2026-08-29"],["Hebei Airlines","2025-01-30"]],nos:"MF8704 MU898 SQ838 TR188"},
- HRB:{a:[]},
+ HRB:{via:"SZX",a:[["Shenzhen Airlines",null,4,"1001011"]],src:"Business Traveller, Feb 2025 launch"},
  HFE:{a:[["China Eastern",null,3,"1110010"]]},
  SWA:{a:[["Scoot",null,3,"0010101"]],x:[["Spring Airlines","2025-10-15"]]},
  TNA:{a:[["Shandong Airlines","1",null,"1111111"]],x:[["Scoot","2025-02-28"]]},
  KMG:{a:[["China Eastern","2",null,"1111111"],["Scoot","1",null,"1010101"]],nos:"MU2048 MU5082 MU9648 TR160"},
- LHW:{a:[]}, LXA:{a:[]},
+ LHW:{via:"HAK",a:[["Hainan Airlines",null,4,"0110101"]],src:"Changi Airport, Jan 2025 launch"},
+ LXA:{via:"CKG",a:[["West Air",null,3,"0010101"]],nos:"PN6426",src:"West Air, Dec 2024 launch"},
  KHN:{a:[["China Eastern",null,3,"1001010"]],x:[["Scoot","2025-02-14"]]},
  NKG:{a:[["Scoot","1–2",null,"1111111"],["China Eastern","1",null,"1111111"],["XiamenAir","1",null,"1111111"]],nos:"MF8686 MU7706 MU7728 TR180 TR182 TR184"},
  NNG:{a:[["Scoot","1",null,"0101101"]],x:[["Guangxi Beibu Gulf Airlines","2025-03-03"],["Spring Airlines","2024-03-22"]]},
@@ -403,10 +416,12 @@ const SCHED={
  WUX:{a:[["Juneyao Air","1",null,"0110101"]],x:[["Jetstar Asia","2025-07-31"]]},
  XIY:{a:[["Scoot","1",null,"1111111"],["China Eastern","1",null,"1111111"]],nos:"MU2070 TR134"},
  XMN:{a:[["XiamenAir","3",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],nos:"MF852 MF886 MF8676 SQ868"},
- YIH:{a:[]}, INC:{a:[]},
+ YIH:{via:"HAK",a:[["Hainan Airlines",null,3,"1001010"]],src:"Changi Airport, Jan 2025 launch"},
+ INC:{via:"CAN",a:[["9 Air","1",null,"1111111"]],nos:"AQ1276",src:"9 Air / AeroRoutes, from 10 Aug 2026"},
  DYG:{a:[["Loong Air",null,3,"0010101"]]},
  CGO:{a:[["Scoot","1",null,"1010110"]],x:[["China Southern","2026-03-04"]]},
 };
+const VIA_NAME={HAK:'Haikou',SZX:'Shenzhen',CKG:'Chongqing',CAN:'Guangzhou'};
 // weekly flights for one airline row: [min, max] or null when not flying yet
 function weekly(r){const [,perDay,perWeek,days]=r; if(perWeek) return [perWeek,perWeek]; if(!perDay) return null;
   const k=[...days].filter(d=>d==='1').length; const [a,b=a]=perDay.split('–').map(Number); return [a*k,b*k];}
@@ -419,7 +434,10 @@ function gcKm(a,b){const R=6371,r=Math.PI/180;const dLa=(b.lat-a.lat)*r,dLo=(b.l
 const cities = CITIES.map(([name,zh,lon,lat,code,airlines,note])=>{
   const ap=AIRPORTS[code]; if(ap){lon=ap[0];lat=ap[1];}
   const km=gcKm(SIN,{lon,lat});
-  return {name,zh,lon,lat,code,airlines,note,km,hrs:km/780+0.5,region:regionOf(name),apName:ap?ap[2]:''};
+  // one-stop routes: fly both legs, plus about an hour on the ground at the stop
+  const v=SCHED[code]&&SCHED[code].via&&AIRPORTS[SCHED[code].via]; let hrs=km/780+0.5;
+  if(v){const V={lon:v[0],lat:v[1]}; const k1=gcKm(SIN,V), k2=gcKm(V,{lon,lat}); hrs=(k1/780+0.5)+(k2/780+0.5)+1;}
+  return {name,zh,lon,lat,code,airlines,note,km,hrs,region:regionOf(name),apName:ap?ap[2]:''};
 }).sort((a,b)=>a.km-b.km);
 
 // ---------- projection ----------
@@ -523,17 +541,17 @@ const rings=[0,1,2].map(i=>{const r=new THREE.Mesh(new THREE.RingGeometry(.9,1.0
 
 // arcs
 const arcVS=`varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
-const arcFS=`uniform vec3 uCol; uniform float uT; uniform float uOn; uniform float uSpeed; varying vec2 vUv;
- void main(){ float d=fract(vUv.x*3.0 - uT*uSpeed); float pulse=smoothstep(0.0,0.25,d)*smoothstep(0.45,0.25,d);
+const arcFS=`uniform vec3 uCol; uniform float uT; uniform float uOn; uniform float uSpeed; uniform float uDash; varying vec2 vUv;
+ void main(){ if(uDash>0.0 && fract(vUv.x*uDash)>0.55) discard; float d=fract(vUv.x*3.0 - uT*uSpeed); float pulse=smoothstep(0.0,0.25,d)*smoothstep(0.45,0.25,d);
  float a=mix(0.10,0.55,uOn)+pulse*mix(0.25,0.9,uOn); gl_FragColor=vec4(uCol,a);} `;
 const pickables=[];
 const ALL_AIRLINES=[...new Set(cities.flatMap(c=>c.airlines))].sort((a,b)=>{
   const n=x=>cities.filter(c=>c.airlines.includes(x)).length; return n(b)-n(a)||a.localeCompare(b);});
 const routes=[];
-function makeRoute(c,curve,airline,dist){
+function makeRoute(c,curve,airline,dist,dashed){
   const mat=new THREE.ShaderMaterial({vertexShader:arcVS,fragmentShader:arcFS,transparent:true,depthWrite:false,
-    uniforms:{uCol:{value:new THREE.Color()},uT:{value:0},uOn:{value:.5},uSpeed:{value:0.12+6/Math.max(dist,6)*0.08}}});
-  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,90,airline?0.026:0.032,6,false),mat); scene.add(tube);
+    uniforms:{uCol:{value:new THREE.Color()},uT:{value:0},uOn:{value:.5},uSpeed:{value:0.12+6/Math.max(dist,6)*0.08},uDash:{value:dashed?Math.round(dist*2.2):0}}});
+  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,dashed?220:90,airline?0.026:0.032,6,false),mat); scene.add(tube);
   const dot=new THREE.Mesh(new THREE.SphereGeometry(airline?.08:.1,12,12),new THREE.MeshBasicMaterial({transparent:true})); scene.add(dot);
   const rt={city:c,airline,curve,tube,dot,phase:Math.random(),speed:0.9/Math.max(dist,4)}; routes.push(rt); return rt;
 }
@@ -543,11 +561,22 @@ cities.forEach(c=>{
   const ph=0.3+c.airlines.length*.35;
   const endY=0.45+ph;
   const c1=S.clone().lerp(E,.28); c1.y+=h; const c2=S.clone().lerp(E,.72); c2.y+=h;
-  const curve=new THREE.CubicBezierCurve3(new THREE.Vector3(S.x,1.2,S.z),c1,c2,E.clone().setY(endY));
-  c.curve=curve; makeRoute(c,curve,null,dist);
+  const viaCode=SCHED[c.code]&&SCHED[c.code].via; let curve;
+  if(viaCode){ // one-stop: Singapore -> stop city -> destination, drawn dashed
+    const ap=AIRPORTS[viaCode], V=new THREE.Vector3(px(ap[0]),0.45,pz(ap[1]));
+    const d1=S.distanceTo(V), d2=V.distanceTo(E), hv=1.4;
+    const a1=S.clone().lerp(V,.28); a1.y+=2+d1*0.32; const a2=S.clone().lerp(V,.72); a2.y+=2+d1*0.32;
+    const b1=V.clone().lerp(E,.3); b1.y+=1+d2*0.4; const b2=V.clone().lerp(E,.7); b2.y+=1+d2*0.4;
+    curve=new THREE.CurvePath();
+    curve.add(new THREE.CubicBezierCurve3(new THREE.Vector3(S.x,1.2,S.z),a1,a2,V.clone().setY(hv)));
+    curve.add(new THREE.CubicBezierCurve3(V.clone().setY(hv),b1,b2,E.clone().setY(endY)));
+    c.viaV=V;
+  } else curve=new THREE.CubicBezierCurve3(new THREE.Vector3(S.x,1.2,S.z),c1,c2,E.clone().setY(endY));
+  c.curve=curve; makeRoute(c,curve,null,dist,!!viaCode);
   // one fanned arc per airline (used in "colour by airline")
   const side=new THREE.Vector3(-(E.z-S.z),0,E.x-S.x).normalize();
-  c.airlines.forEach((a,i)=>{const o=(i-(c.airlines.length-1)/2)*0.55;
+  if(viaCode) c.airlines.forEach(a=>makeRoute(c,curve,a,dist,true));
+  else c.airlines.forEach((a,i)=>{const o=(i-(c.airlines.length-1)/2)*0.55;
     const k1=c1.clone().addScaledVector(side,o*1.6), k2=c2.clone().addScaledVector(side,o*1.6); k1.y+=o*0.4; k2.y+=o*0.4;
     makeRoute(c,new THREE.CubicBezierCurve3(new THREE.Vector3(S.x,1.2,S.z),k1,k2,E.clone().setY(endY)),a,dist);});
   // fat invisible picker along the arc
@@ -640,7 +669,7 @@ const listEl=document.getElementById('list');
 REGIONS.forEach(rg=>{const h=document.createElement('div');h.className='grp';h.style.setProperty('--rc',`var(--r-${rg.key})`);
   h.innerHTML=`<i class="dot"></i>${rg.name} China <small>${rg.zh}</small><span>${rg.cities.length}</span>`;listEl.appendChild(h);rg.head=h;
   cities.filter(c=>c.region===rg).forEach(c=>{const r=document.createElement('button');r.type='button';r.className='row';
-  r.innerHTML=`<span class="code">${c.code.split(' ')[0]}</span><span class="nm">${c.name}<small>${c.zh}</small></span><span class="km">${Math.round(c.km).toLocaleString()} km<br><span class="wk">${fmtRange(cityWeekly(c))}/wk</span></span>`;
+  r.innerHTML=`<span class="code">${c.code.split(' ')[0]}</span><span class="nm">${c.name}<small>${c.zh}</small></span><span class="km">${Math.round(c.km).toLocaleString()} km<br><span class="wk">${SCHED[c.code]&&SCHED[c.code].via?'1 stop · ':''}${fmtRange(cityWeekly(c))}/wk</span></span>`;
   r.onclick=()=>select(c); r.onmouseenter=()=>{hovered=c}; r.onmouseleave=()=>{hovered=null}; r.style.setProperty('--rc',`var(--r-${c.region.key})`); listEl.appendChild(r); c.row=r;});});
 
 const detailEl=document.getElementById('detail');
@@ -707,6 +736,7 @@ function render(){
   if(!selected){detailEl.hidden=true;return;}
   detailEl.hidden=false;
   detailEl.innerHTML=compareWith?compareCard(selected,compareWith):cityCard(selected);
+  if(isPhone()) document.querySelector('.p-body').scrollTo({top:0,behavior:'smooth'}); else detailEl.scrollTop=0;
   const cb=detailEl.querySelector('[data-act="compare"]'); if(cb) cb.onclick=()=>{comparePick=true;render();};
   const xb=detailEl.querySelector('[data-act="endcmp"]'); if(xb) xb.onclick=()=>{compareWith=null;render();fitFocus();};
   const cl=detailEl.querySelector('[data-act="close"]'); if(cl) cl.onclick=()=>{selected=null;compareWith=null;comparePick=false;render();};
@@ -715,31 +745,35 @@ const fmtH=c=>{const h=Math.floor(c.hrs), m=Math.round((c.hrs-h)*60/5)*5; return
 const gfUrl=c=>`https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from SIN to ${c.code.split(' ')[0]}`)}`;
 const airRow=a=>`<li><span class="al-code" style="--rc:${airCss[a]||'var(--arc)'}">${AIR_CODE[a]||'··'}</span><span>${a}</span></li>`;
 function schedTable(c){const s=SCHED[c.code];
+  const via=s&&s.via?VIA_NAME[s.via]:null;
   if(!s||!s.a.length) return `<div class="sched-none">No non-stop timetable found for this route. It is probably flown with a stop on the way (same plane, one stop). Airlines listed for it: ${c.airlines.join(', ')}.</div>`;
   const nos=(s.nos||'').split(' ');
   const rows=s.a.map(r=>{const [name,perDay,perWeek,days,start]=r; const code=AIR_CODE[name]||''; const w=weekly(r);
     const fn=nos.filter(n=>code&&n.startsWith(code)).join(' ');
-    const dayCells=[...days].map((d,i)=>`<i class="dy ${d==='1'?'on':d==='u'?'up':''}" title="${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}">${'SMTWTFS'[i]}</i>`).join('');
+    const dayCells=days.includes('?')?'<span class="dy-unk">days not published</span>':[...days].map((d,i)=>`<i class="dy ${d==='1'?'on':d==='u'?'up':''}" title="${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}">${'SMTWTFS'[i]}</i>`).join('');
     const freq=start?`<span class="soon">Starts ${fmtDate(start)}</span>`
-      :perWeek?`${perWeek}×/week`:(days==='1111111'?`${perDay}×/day`:`${perDay}×/day on ${[...days].filter(d=>d==='1').length} days`);
+      :(!perWeek&&!perDay)?'schedule not published':perWeek?`${perWeek}×/week`:(days==='1111111'?`${perDay}×/day`:`${perDay}×/day on ${[...days].filter(d=>d==='1').length} days`);
     return `<tr class="${start?'is-up':''}"><td class="al-n"><span class="al-code" style="--rc:${airCss[name]||'var(--arc)'}">${code||'··'}</span> ${name}<small>${freq}${fn?` · ${fn}`:''}</small></td>
       <td class="dys">${dayCells}</td><td class="num">${w?fmtRange(w):'—'}</td></tr>`;}).join('');
   const tot=cityWeekly(c); const daily=s.a.some(r=>r[3]==='1111111'&&!r[4]);
+  const firstStart=s.a.filter(r=>r[4]).map(r=>r[4]).sort()[0];
   const changes=[...s.a.filter(r=>r[4]).map(r=>`<li class="up">▲ <b>${r[0]}</b> starts ${fmtDate(r[4])}</li>`),
     ...(s.x||[]).map(([n,d])=>`<li class="down">▼ <b>${n}</b> stopped, last flight ${fmtDate(d)}</li>`)];
   if(c.name==='Nanjing') changes.unshift(`<li class="up">▲ <b>XiamenAir</b> new route, from 24 Sep 2026</li>`);
-  return `<div class="sched-h"><span class="pill ${daily?'ok':''}">${daily?'Daily service':'Selected days only'}</span><span class="sched-t">${tot?fmtRange(tot):'0'} flights a week</span></div>
+  const viaBox=via?`<div class="via-box">One stop: this flight lands in <b>${via}</b> (${s.via}) and continues on the same plane. Not non-stop. Flight time includes about 1 hour on the ground.</div>`:'';
+  return `${viaBox}<div class="sched-h"><span class="pill ${via?'via-p':daily?'ok':tot?'':'soon-p'}">${via?`Via ${via}`:daily?'Daily service':tot?'Selected days only':'Starting soon'}</span><span class="sched-t">${tot?`${fmtRange(tot)} flights a week`:firstStart?`First flight ${fmtDate(firstStart)}`:'No flights yet'}</span></div>
    <div class="sched-wrap"><table class="sched"><thead><tr><th>Airline</th><th>Days</th><th class="num">/week</th></tr></thead><tbody>${rows}</tbody>
    <tfoot><tr><td>Total</td><td></td><td class="num">${fmtRange(tot)}</td></tr></tfoot></table></div>
+   ${s.src?`<div class="src">One-stop schedule: ${s.src}. May have changed since.</div>`:''}
    ${changes.length?`<div class="chg"><div class="chg-t">Changes</div><ul>${changes.join('')}</ul></div>`:''}`;
 }
 function cityCard(c){const w=cityWeekly(c);
-  return `<div class="d-top"><div class="eyebrow">SIN → ${c.code} · <span style="color:var(--r-${c.region.key})">${c.region.name} China</span></div>
+  return `<div class="d-top"><div class="eyebrow">SIN → ${SCHED[c.code]&&SCHED[c.code].via?SCHED[c.code].via+' → ':''}${c.code} · <span style="color:var(--r-${c.region.key})">${c.region.name} China</span></div>
     <button class="x" data-act="close" type="button" aria-label="Close">×</button></div>
    <h2>${c.name}<span>${c.zh}</span></h2>
    <div class="stats"><div class="stat"><span class="v">${Math.round(c.km).toLocaleString()}</span><span class="k">km away</span></div>
    <div class="stat"><span class="v">${fmtH(c)}</span><span class="k">flight time</span></div>
-   <div class="stat"><span class="v">${w?fmtRange(w):'—'}</span><span class="k">flights / week</span></div></div>
+   <div class="stat"><span class="v">${w?fmtRange(w):'—'}</span><span class="k">${w?'flights / week':'not started'}</span></div></div>
    <div class="apn"><span class="k">Airport</span> ${c.apName||c.code} <b>${c.code}</b></div>
    ${schedTable(c)}
    ${c.note?`<div class="note">${c.note}</div>`:''}
@@ -764,8 +798,28 @@ function compareCard(a,b){
    <div class="d-act"><a class="btn-p" href="${gfUrl(a)}" target="_blank" rel="noopener">${a.name} flights ↗</a><a class="btn-p" href="${gfUrl(b)}" target="_blank" rel="noopener">${b.name} flights ↗</a>
    <button class="btn" data-act="endcmp" type="button">End compare</button></div>`;
 }
+const floatCard={x:null,y:null};
+function placeDetail(){const phone=isPhone();
+  if(phone){ if(detailEl.parentElement===document.body){document.querySelector('.search').after(detailEl);} detailEl.classList.remove('float'); detailEl.style.left=detailEl.style.top=''; return;}
+  if(detailEl.parentElement!==document.body) document.body.appendChild(detailEl);
+  detailEl.classList.add('float');
+  if(floatCard.x!=null){detailEl.style.left=Math.min(floatCard.x,innerWidth-80)+'px';detailEl.style.top=Math.min(floatCard.y,innerHeight-60)+'px';detailEl.style.right='auto';}
+  else {detailEl.style.left=detailEl.style.top='';detailEl.style.right='';}}
+addEventListener('resize',placeDetail);
+detailEl.addEventListener('pointerdown',e=>{if(!detailEl.classList.contains('float'))return; const hd=e.target.closest('.d-top,h2'); if(!hd||e.target.closest('button'))return;
+  const r=detailEl.getBoundingClientRect(), ox=e.clientX-r.left, oy=e.clientY-r.top; detailEl.setPointerCapture(e.pointerId); detailEl.classList.add('dragging');
+  const mv=ev=>{floatCard.x=Math.max(0,ev.clientX-ox);floatCard.y=Math.max(0,ev.clientY-oy);placeDetail();};
+  const up=()=>{detailEl.classList.remove('dragging');detailEl.removeEventListener('pointermove',mv);detailEl.removeEventListener('pointerup',up);};
+  detailEl.addEventListener('pointermove',mv);detailEl.addEventListener('pointerup',up);});
 function fitFocus(){const cs=[selected,compareWith].filter(Boolean); if(!cs.length) return;
-  const t=new THREE.Vector3(); cs.forEach(c=>t.add(c.top)); t.divideScalar(cs.length).lerp(S,cs.length>1?.3:.5).setY(0); if(isPhone()) t.z+=9; flyTo(t);}
+  // one city: zoom in on it. two cities (compare): frame both.
+  const t=new THREE.Vector3(); cs.forEach(c=>t.add(c.E)); t.divideScalar(cs.length).setY(0);
+  const spread=cs.length>1?cs[0].E.distanceTo(cs[1].E):0;
+  const dist=Math.max(isPhone()?34:26, spread*1.5+18);
+  const k=dist/76;                                  // keep screen offsets the same size at any zoom
+  if(isPhone()) t.z+=9*k; else if(floatCard.x==null) t.x+=(panelSide==='right'?-7:7)*k;
+  const dir=camera.position.clone().sub(controls.target).normalize();
+  flyTo(t,t.clone().addScaledVector(dir,dist));}
 function flyRegions(){if(!regionSel.size){const h=mobileHome();flyTo(h.target,h.pos);return;}
   const cs=cities.filter(c=>regionSel.has(c.region));const t=new THREE.Vector3();cs.forEach(c=>t.add(c.top));t.divideScalar(cs.length).lerp(S,.35).setY(0);flyTo(t);}
 function select(c,force){
@@ -914,5 +968,5 @@ function tick(now){
   rings.forEach(r=>{const k=((T*.5)+r.userData.o)%1; r.scale.setScalar(1+k*2.2); r.material.opacity=(1-k)*.6;});
   renderer.render(scene,camera); requestAnimationFrame(tick);
 }
-render(); requestAnimationFrame(tick);
+placeDetail(); render(); requestAnimationFrame(tick);
 </script>
