@@ -41,6 +41,32 @@ body{background:var(--sea);color:var(--ink);font:15px/1.45 Barlow,system-ui,sans
 .ll.hot .ll-code{font-size:13px}
 body.no-codes .ll-code{display:none}
 .apn{font-size:14px}
+.sched-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.pill{font:600 12px Barlow,sans-serif;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+.pill.ok{border-color:var(--r-southwest);color:var(--r-southwest)}
+.sched-t{font:500 13px "JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+.sched-wrap{overflow-x:auto;margin:0 -4px}
+.sched{width:100%;border-collapse:collapse;font-size:13px}
+.sched th{font:600 12px Barlow,sans-serif;color:var(--ink-2);text-align:left;padding:4px;border-bottom:1px solid var(--line)}
+.sched td{padding:7px 3px;border-bottom:1px solid var(--line);vertical-align:middle}
+.sched .num{text-align:right;font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sched tfoot td{font-weight:600;border-bottom:0}
+.al-n{font-size:14px;line-height:1.3}
+.al-n .al-code{min-width:0;padding:2px 4px;margin-right:2px;font-size:11.5px}
+.al-n small{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
+.dys{white-space:nowrap}
+.dy{display:inline-block;width:12px;text-align:center;font:600 12px/18px "Barlow Condensed",sans-serif;font-style:normal;color:var(--ink-2);opacity:.35}
+.dy.on{opacity:1;color:var(--ink);border-bottom:2px solid var(--arc)}
+.dy.up{opacity:.9;color:var(--arc);border-bottom:2px dashed var(--arc)}
+tr.is-up .al-n{color:var(--ink-2)}
+.soon{color:var(--arc);font-weight:600}
+.sched-none{font-size:13px;color:var(--ink-2);border:1px dashed var(--line);border-radius:8px;padding:10px}
+.chg-t{font:700 13px "Barlow Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px}
+.chg ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.chg .up{color:var(--r-southwest)} .chg .down{color:var(--r-central)}
+.chg b{color:var(--ink);font-weight:600}
+#detail .src{margin:0}
+.km .wk{font-size:12px;opacity:.85}
 .apn .k{font-size:12px;color:var(--ink-2);margin-right:4px}
 .apn b{font:500 12px "JetBrains Mono",monospace;color:var(--arc);margin-left:4px}
 .ll.dim{opacity:.3}
@@ -54,7 +80,7 @@ body.no-names .lbl:not(.sg):not(.hot){opacity:0}
 .lbl.sg{font-size:18px;color:var(--sg)}
 .lbl.faded{opacity:0!important}
 
-#panel{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:16px;bottom:16px;width:340px;max-width:calc(100vw - 32px);
+#panel{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:16px;bottom:16px;width:384px;max-width:calc(100vw - 32px);
   background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
 .p-head{padding:18px 18px 12px;border-bottom:1px solid var(--line)}
@@ -260,7 +286,7 @@ body[data-side="right"] #hint{right:auto;left:16px}
       <div class="sec-h"><button class="sec-tg" type="button" aria-expanded="true"><span class="sec-t">Cities</span><span class="sec-n">by region · nearest first</span><i class="chev"></i></button></div>
       <div class="sec-b"><div class="list" id="list"></div></div>
     </section>
-    <p class="src">Routes from the airlines-and-destinations list on <a href="https://en.wikipedia.org/wiki/Changi_Airport#Airlines_and_destinations" target="_blank" rel="noopener">Wikipedia</a>, 22 Sep 2026. Hong Kong, Macau and Taiwan not counted. A few routes stop on the way. Flight times are rough guesses from distance.</p>
+    <p class="src">Routes from the airlines-and-destinations list on <a href="https://en.wikipedia.org/wiki/Changi_Airport#Airlines_and_destinations" target="_blank" rel="noopener">Wikipedia</a>, 22 Sep 2026. Hong Kong, Macau and Taiwan not counted. Flights per week from flightsfrom.com timetables (non-stop), 22 Sep 2026. A few routes stop on the way. Flight times are rough guesses from distance.</p>
   </div>
 </aside>
 <button id="showPanel" type="button" hidden>Show panel</button>
@@ -280,10 +306,10 @@ const CITIES = [
  ["Chengdu","成都",104.07,30.57,"TFU",["Air China","Sichuan Airlines","Singapore Airlines"]],
  ["Chongqing","重庆",106.55,29.56,"CKG",["Air China","Chongqing Airlines","Singapore Airlines","West Air"]],
  ["Fuzhou","福州",119.30,26.08,"FOC",["Scoot","XiamenAir"]],
- ["Guangzhou","广州",113.26,23.13,"CAN",["9 Air","Scoot","Singapore Airlines","Spring Airlines"]],
+ ["Guangzhou","广州",113.26,23.13,"CAN",["9 Air","China Southern","Scoot","Singapore Airlines","Spring Airlines"]],
  ["Guiyang","贵阳",106.63,26.65,"KWE",["Tianjin Airlines","Scoot"],"Scoot starts 26 Oct 2026."],
  ["Haikou","海口",110.33,20.03,"HAK",["Hainan Airlines","Scoot"]],
- ["Hangzhou","杭州",120.16,30.27,"HGH",["China Eastern","Loong Air","Scoot","Singapore Airlines","XiamenAir"]],
+ ["Hangzhou","杭州",120.16,30.27,"HGH",["China Eastern","Scoot","Singapore Airlines","XiamenAir"],"Loong Air stopped flying here on 29 Aug 2026."],
  ["Harbin","哈尔滨",126.53,45.80,"HRB",["Shenzhen Airlines"]],
  ["Hefei","合肥",117.23,31.82,"HFE",["China Eastern"]],
  ["Jieyang","揭阳",116.37,23.55,"SWA",["Scoot"],"Also called Chaoshan / Shantou."],
@@ -299,7 +325,7 @@ const CITIES = [
  ["Sanya","三亚",109.51,18.25,"SYX",["Cambodia Airways","SCAT Airlines"],"Flown by foreign airlines on longer routes."],
  ["Shanghai","上海",121.47,31.23,"PVG",["Air China","China Eastern","Juneyao Air","Shanghai Airlines","Singapore Airlines","Spring Airlines"]],
  ["Shenyang","沈阳",123.43,41.80,"SHE",["Scoot"]],
- ["Shenzhen","深圳",114.06,22.54,"SZX",["Shenzhen Airlines","Singapore Airlines"]],
+ ["Shenzhen","深圳",114.06,22.54,"SZX",["China Southern","Shenzhen Airlines","Singapore Airlines"]],
  ["Tianjin","天津",117.20,39.13,"TSN",["Scoot","Tianjin Airlines"]],
  ["Wenzhou","温州",120.70,28.00,"WNZ",["Loong Air"]],
  ["Wuhan","武汉",114.31,30.59,"WUH",["China Eastern","Scoot"]],
@@ -322,7 +348,7 @@ const REGIONS=[
  {key:"northwest",name:"Northwest",zh:"西北",cities:["Xi'an","Lanzhou","Yinchuan"]},
 ];
 const regionOf=n=>REGIONS.find(r=>r.cities.includes(n));
-const AIR_CODE={"Air China":"CA","China Eastern":"MU","Singapore Airlines":"SQ","Scoot":"TR","XiamenAir":"MF","Hainan Airlines":"HU","Loong Air":"GJ",
+const AIR_CODE={"China Southern":"CZ","Air China":"CA","China Eastern":"MU","Singapore Airlines":"SQ","Scoot":"TR","XiamenAir":"MF","Hainan Airlines":"HU","Loong Air":"GJ",
  "9 Air":"AQ","Juneyao Air":"HO","Shenzhen Airlines":"ZH","Spring Airlines":"9C","Tianjin Airlines":"GS","West Air":"PN","Cambodia Airways":"KR",
  "Chongqing Airlines":"OQ","SCAT Airlines":"DV","Shandong Airlines":"SC","Shanghai Airlines":"FM","Sichuan Airlines":"3U"};
 // real airport locations (lon, lat) + names, by airport code
@@ -340,6 +366,54 @@ const AIRPORTS={
  WUX:[120.43,31.49,"Wuxi Shuofang"],XIY:[108.75,34.45,"Xi'an Xianyang International"],XMN:[118.13,24.54,"Xiamen Gaoqi International"],
  YIH:[111.48,30.56,"Yichang Sanxia International"],INC:[106.39,38.32,"Yinchuan Hedong International"],DYG:[110.44,29.10,"Zhangjiajie Hehua International"],
  CGO:[113.84,34.52,"Zhengzhou Xinzheng International"]};
+
+// Timetables from flightsfrom.com (non-stop flights, schedule as of 22 Sep 2026).
+// a: [airline, per-day count ("1", "1–2") or null, per-week count (weekly airlines) or null, days S M T W T F S (1 = flies, 0 = no, u = starting soon), start date]
+// x: airlines that stopped flying the route since 2024 [airline, last flight]
+const SCHED={
+ PEK:{a:[["Air China","3",null,"1111111"],["Singapore Airlines","3",null,"1111111"]],nos:"CA890 CA970 CA976 SQ800 SQ802 SQ806"},
+ PKX:{a:[["China Eastern","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],x:[["China Southern","2024-10-26"]],nos:"MU5032 SQ810"},
+ CGQ:{a:[]},
+ CSX:{a:[["Scoot","1",null,"1111011"],["XiamenAir","1",null,"1101010"]],x:[["China Southern","2026-07-31"],["China Eastern","2026-03-27"]],nos:"MF8740 TR124"},
+ TFU:{a:[["Sichuan Airlines","2",null,"1111111"],["Air China","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],nos:"3U3910 3U3920 CA404 SQ842 SQ846"},
+ CKG:{a:[["West Air","1",null,"1111111"],["Air China","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"],["Chongqing Airlines",null,null,"uuuuuuu","2026-10-25"]],x:[["China Southern","2025-12-13"]],nos:"CA490 OQ2096 PN6426 PN6444 SQ818"},
+ FOC:{a:[["XiamenAir","1",null,"1111111"],["Scoot","1",null,"1101010"]],nos:"MF866 TR174"},
+ CAN:{a:[["China Southern","3–4",null,"1111111"],["Singapore Airlines","2",null,"1111111"],["Scoot","1",null,"1111111"],["9 Air","1",null,"1111111"],["Spring Airlines",null,3,"0010101"]],nos:"9C6278 CZ352 CZ354 CZ3040 CZ3044 CZ8490 SQ850 SQ852 TR100"},
+ KWE:{a:[["Tianjin Airlines","1",null,"0110101"],["Scoot",null,null,"0u0u0u0","2026-10-26"]],nos:"GS7964 TR130"},
+ HAK:{a:[["Hainan Airlines","2–3",null,"1111111"],["Scoot","1",null,"1110101"]],x:[["Jetstar Asia","2025-04-30"]],nos:"HU448 HU460 HU748 HU7910 TR118"},
+ HGH:{a:[["Scoot","1",null,"1111111"],["XiamenAir","1",null,"1111111"],["Singapore Airlines","1",null,"1111111"],["China Eastern","1",null,"1011001"]],x:[["Loong Air","2026-08-29"],["Hebei Airlines","2025-01-30"]],nos:"MF8704 MU898 SQ838 TR188"},
+ HRB:{a:[]},
+ HFE:{a:[["China Eastern",null,3,"1110010"]]},
+ SWA:{a:[["Scoot",null,3,"0010101"]],x:[["Spring Airlines","2025-10-15"]]},
+ TNA:{a:[["Shandong Airlines","1",null,"1111111"]],x:[["Scoot","2025-02-28"]]},
+ KMG:{a:[["China Eastern","2",null,"1111111"],["Scoot","1",null,"1010101"]],nos:"MU2048 MU5082 MU9648 TR160"},
+ LHW:{a:[]}, LXA:{a:[]},
+ KHN:{a:[["China Eastern",null,3,"1001010"]],x:[["Scoot","2025-02-14"]]},
+ NKG:{a:[["Scoot","1–2",null,"1111111"],["China Eastern","1",null,"1111111"],["XiamenAir","1",null,"1111111"]],nos:"MF8686 MU7706 MU7728 TR180 TR182 TR184"},
+ NNG:{a:[["Scoot","1",null,"0101101"]],x:[["Guangxi Beibu Gulf Airlines","2025-03-03"],["Spring Airlines","2024-03-22"]]},
+ NGB:{a:[["China Eastern","1–2",null,"0110101"]],x:[["Scoot","2024-10-26"]],nos:"MU826 MU6078 MU7322"},
+ TAO:{a:[["Scoot","1",null,"1111111"]]},
+ SYX:{a:[["Cambodia Airways",null,null,"00u000u","2026-10-10"],["SCAT Airlines",null,null,"u0u0u0u","2026-10-20"]],x:[["China Eastern","2026-03-01"]],nos:"KR9756 DV778"},
+ PVG:{a:[["China Eastern","4–5",null,"1111111"],["Singapore Airlines","5",null,"1111111"],["Juneyao Air","2",null,"1111111"],["Spring Airlines","1–3",null,"1111111"],["Air China","1",null,"1111111"],["Shanghai Airlines","1",null,"1111111"]],nos:"9C8550 9C8552 9C8598 CA826 FM844 HO1576 HO1602 HO1606 +10 more"},
+ SHE:{a:[["Scoot","1",null,"1010110"]]},
+ SZX:{a:[["Shenzhen Airlines","3",null,"1111111"],["China Southern","2–4",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],x:[["Scoot","2024-03-30"]],nos:"CZ5086 CZ8046 CZ8048 CZ8118 SQ856 ZH228 ZH230 ZH240"},
+ TSN:{a:[["Scoot","1",null,"1010111"]]},
+ WNZ:{a:[["Loong Air",null,2,"0100010"]],nos:"GJ6076 GJ8798"},
+ WUH:{a:[["Scoot","1",null,"1111111"],["China Eastern","1",null,"1101010"]],x:[["XiamenAir","2026-03-01"]],nos:"MU2578 TR120"},
+ WUX:{a:[["Juneyao Air","1",null,"0110101"]],x:[["Jetstar Asia","2025-07-31"]]},
+ XIY:{a:[["Scoot","1",null,"1111111"],["China Eastern","1",null,"1111111"]],nos:"MU2070 TR134"},
+ XMN:{a:[["XiamenAir","3",null,"1111111"],["Singapore Airlines","1",null,"1111111"]],nos:"MF852 MF886 MF8676 SQ868"},
+ YIH:{a:[]}, INC:{a:[]},
+ DYG:{a:[["Loong Air",null,3,"0010101"]]},
+ CGO:{a:[["Scoot","1",null,"1010110"]],x:[["China Southern","2026-03-04"]]},
+};
+// weekly flights for one airline row: [min, max] or null when not flying yet
+function weekly(r){const [,perDay,perWeek,days]=r; if(perWeek) return [perWeek,perWeek]; if(!perDay) return null;
+  const k=[...days].filter(d=>d==='1').length; const [a,b=a]=perDay.split('–').map(Number); return [a*k,b*k];}
+function cityWeekly(c){const s=SCHED[c.code]; if(!s||!s.a.length) return null; let lo=0,hi=0,any=false;
+  s.a.forEach(r=>{const w=weekly(r); if(w){lo+=w[0];hi+=w[1];any=true;}}); return any?[lo,hi]:null;}
+const fmtRange=w=>w?(w[0]===w[1]?`${w[0]}`:`${w[0]}–${w[1]}`):'—';
+const fmtDate=s=>{const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});};
 function gcKm(a,b){const R=6371,r=Math.PI/180;const dLa=(b.lat-a.lat)*r,dLo=(b.lon-a.lon)*r;
   const h=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
 const cities = CITIES.map(([name,zh,lon,lat,code,airlines,note])=>{
@@ -566,7 +640,7 @@ const listEl=document.getElementById('list');
 REGIONS.forEach(rg=>{const h=document.createElement('div');h.className='grp';h.style.setProperty('--rc',`var(--r-${rg.key})`);
   h.innerHTML=`<i class="dot"></i>${rg.name} China <small>${rg.zh}</small><span>${rg.cities.length}</span>`;listEl.appendChild(h);rg.head=h;
   cities.filter(c=>c.region===rg).forEach(c=>{const r=document.createElement('button');r.type='button';r.className='row';
-  r.innerHTML=`<span class="code">${c.code.split(' ')[0]}</span><span class="nm">${c.name}<small>${c.zh}</small></span><span class="km">${Math.round(c.km).toLocaleString()} km</span>`;
+  r.innerHTML=`<span class="code">${c.code.split(' ')[0]}</span><span class="nm">${c.name}<small>${c.zh}</small></span><span class="km">${Math.round(c.km).toLocaleString()} km<br><span class="wk">${fmtRange(cityWeekly(c))}/wk</span></span>`;
   r.onclick=()=>select(c); r.onmouseenter=()=>{hovered=c}; r.onmouseleave=()=>{hovered=null}; r.style.setProperty('--rc',`var(--r-${c.region.key})`); listEl.appendChild(r); c.row=r;});});
 
 const detailEl=document.getElementById('detail');
@@ -640,18 +714,38 @@ function render(){
 const fmtH=c=>{const h=Math.floor(c.hrs), m=Math.round((c.hrs-h)*60/5)*5; return `~${h}h${m?String(m).padStart(2,'0'):''}`;};
 const gfUrl=c=>`https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from SIN to ${c.code.split(' ')[0]}`)}`;
 const airRow=a=>`<li><span class="al-code" style="--rc:${airCss[a]||'var(--arc)'}">${AIR_CODE[a]||'··'}</span><span>${a}</span></li>`;
-function cityCard(c){
+function schedTable(c){const s=SCHED[c.code];
+  if(!s||!s.a.length) return `<div class="sched-none">No non-stop timetable found for this route. It is probably flown with a stop on the way (same plane, one stop). Airlines listed for it: ${c.airlines.join(', ')}.</div>`;
+  const nos=(s.nos||'').split(' ');
+  const rows=s.a.map(r=>{const [name,perDay,perWeek,days,start]=r; const code=AIR_CODE[name]||''; const w=weekly(r);
+    const fn=nos.filter(n=>code&&n.startsWith(code)).join(' ');
+    const dayCells=[...days].map((d,i)=>`<i class="dy ${d==='1'?'on':d==='u'?'up':''}" title="${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}">${'SMTWTFS'[i]}</i>`).join('');
+    const freq=start?`<span class="soon">Starts ${fmtDate(start)}</span>`
+      :perWeek?`${perWeek}×/week`:(days==='1111111'?`${perDay}×/day`:`${perDay}×/day on ${[...days].filter(d=>d==='1').length} days`);
+    return `<tr class="${start?'is-up':''}"><td class="al-n"><span class="al-code" style="--rc:${airCss[name]||'var(--arc)'}">${code||'··'}</span> ${name}<small>${freq}${fn?` · ${fn}`:''}</small></td>
+      <td class="dys">${dayCells}</td><td class="num">${w?fmtRange(w):'—'}</td></tr>`;}).join('');
+  const tot=cityWeekly(c); const daily=s.a.some(r=>r[3]==='1111111'&&!r[4]);
+  const changes=[...s.a.filter(r=>r[4]).map(r=>`<li class="up">▲ <b>${r[0]}</b> starts ${fmtDate(r[4])}</li>`),
+    ...(s.x||[]).map(([n,d])=>`<li class="down">▼ <b>${n}</b> stopped, last flight ${fmtDate(d)}</li>`)];
+  if(c.name==='Nanjing') changes.unshift(`<li class="up">▲ <b>XiamenAir</b> new route, from 24 Sep 2026</li>`);
+  return `<div class="sched-h"><span class="pill ${daily?'ok':''}">${daily?'Daily service':'Selected days only'}</span><span class="sched-t">${tot?fmtRange(tot):'0'} flights a week</span></div>
+   <div class="sched-wrap"><table class="sched"><thead><tr><th>Airline</th><th>Days</th><th class="num">/week</th></tr></thead><tbody>${rows}</tbody>
+   <tfoot><tr><td>Total</td><td></td><td class="num">${fmtRange(tot)}</td></tr></tfoot></table></div>
+   ${changes.length?`<div class="chg"><div class="chg-t">Changes</div><ul>${changes.join('')}</ul></div>`:''}`;
+}
+function cityCard(c){const w=cityWeekly(c);
   return `<div class="d-top"><div class="eyebrow">SIN → ${c.code} · <span style="color:var(--r-${c.region.key})">${c.region.name} China</span></div>
     <button class="x" data-act="close" type="button" aria-label="Close">×</button></div>
    <h2>${c.name}<span>${c.zh}</span></h2>
    <div class="stats"><div class="stat"><span class="v">${Math.round(c.km).toLocaleString()}</span><span class="k">km away</span></div>
    <div class="stat"><span class="v">${fmtH(c)}</span><span class="k">flight time</span></div>
-   <div class="stat"><span class="v">${c.airlines.length}</span><span class="k">airline${c.airlines.length>1?'s':''}</span></div></div>
+   <div class="stat"><span class="v">${w?fmtRange(w):'—'}</span><span class="k">flights / week</span></div></div>
    <div class="apn"><span class="k">Airport</span> ${c.apName||c.code} <b>${c.code}</b></div>
-   <ul class="al">${c.airlines.map(airRow).join('')}</ul>
+   ${schedTable(c)}
    ${c.note?`<div class="note">${c.note}</div>`:''}
    <div class="d-act"><a class="btn-p" href="${gfUrl(c)}" target="_blank" rel="noopener">See live flights ↗</a>
-   <button class="btn" data-act="compare" type="button">Compare with…</button></div>`;
+   <button class="btn" data-act="compare" type="button">Compare with…</button></div>
+   <div class="src">Timetable: flightsfrom.com, non-stop flights, checked 22 Sep 2026. Days can vary week to week.</div>`;
 }
 function compareCard(a,b){
   const both=a.airlines.filter(x=>b.airlines.includes(x));
@@ -663,6 +757,7 @@ function compareCard(a,b){
    ${row('Distance',Math.round(a.km).toLocaleString()+' km',Math.round(b.km).toLocaleString()+' km',less(a.km,b.km))}
    ${row('Flight time',fmtH(a),fmtH(b),less(a.hrs,b.hrs))}
    ${row('Airlines',a.airlines.length,b.airlines.length,less(-a.airlines.length,-b.airlines.length))}
+   ${row('Flights / week',fmtRange(cityWeekly(a)),fmtRange(cityWeekly(b)),less(-((cityWeekly(a)||[0])[0]),-((cityWeekly(b)||[0])[0])))}
    ${row('Airport',a.code,b.code,-1)}
    </tbody></table></div>
    <div class="note">${both.length?`Both served by: ${both.join(', ')}`:'No airline flies to both.'}</div>
