@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Changi route maps</title>
+<title>Changi Routes</title>
 <style>
 @font-face {
   font-family: 'Barlow';
@@ -286,8 +286,11 @@ body[data-side="right"] #themeBtn{right:auto;left:16px}
 @media (max-width:1150px){#panel{width:330px}#detail.float{width:330px}}
 @media (max-width:900px), (pointer:coarse) and (max-width:1200px){
   .only-wide{display:none!important}
-  .grab{display:flex;justify-content:center;align-items:center;border:0;background:none;padding:8px 0 2px;cursor:grab;touch-action:none;width:100%}
-  .grab i{width:44px;height:5px;border-radius:3px;background:var(--ink-2);opacity:.6}
+  /* a big, easy target for dragging the sheet up and down */
+  .grab{display:flex;justify-content:center;align-items:center;border:0;background:none;padding:14px 0 10px;cursor:grab;touch-action:none;width:100%}
+  .grab i{width:64px;height:6px;border-radius:4px;background:var(--ink-2);opacity:.75}
+  #panel .p-head{touch-action:none;cursor:grab}
+  #panel.dragging .grab i{opacity:1;background:var(--arc)}
   #panel{top:auto!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;box-sizing:border-box;max-width:100vw;max-height:none;border-radius:16px 16px 0 0;
     padding-bottom:env(safe-area-inset-bottom,0px);transition:height .25s ease;height:150px}
   #panel.dragging{transition:none}
@@ -1541,7 +1544,7 @@ function loadCountry(i){
   if(d.parentElement===document.body) document.querySelector('.search').after(d);
   document.querySelectorAll('#countries button').forEach((b,k)=>b.setAttribute('aria-pressed',String(k===i)));
   const c=COUNTRIES[i];
-  document.title=c.cfg.title;
+  if(COUNTRIES.length===1) document.title=c.cfg.title;   // the combined page keeps one fixed title
   window.themeReady=false;   // the new scene paints its own colours when it is ready
   boot(c.cfg,c.lines);
 }
@@ -1571,7 +1574,7 @@ const cities = CITIES.map(([name,zh,lon,lat,code,airlines,note])=>{
   // one-stop routes: fly both legs, plus about an hour on the ground at the stop
   const v=SCHED[code]&&SCHED[code].via&&AIRPORTS[SCHED[code].via]; let hrs=km/780+0.5;
   if(v){const V={lon:v[0],lat:v[1]}; const k1=gcKm(SIN,V), k2=gcKm(V,{lon,lat}); hrs=(k1/780+0.5)+(k2/780+0.5)+1;}
-  return {name,zh,lon,lat,code,airlines,note,km,hrs,alias,prov:provOf(name),region:regionOf(name),connect:!!(SCHED[code]&&SCHED[code].connect),apName:ap?ap[2]:''};
+  return {name,zh,lon,lat,code,airlines,note,km,hrs,alias,prov:provOf(name),region:regionOf(name),connect:!!(SCHED[code]&&(SCHED[code].connect||SCHED[code].lost)),lost:!!(SCHED[code]&&SCHED[code].lost),apName:ap?ap[2]:''};
 }).sort((a,b)=>a.km-b.km);
 
 // ---------- projection ----------
@@ -1695,6 +1698,13 @@ cities.forEach(c=>{
   const endY=0.45+ph;
   const c1=S.clone().lerp(E,.28); c1.y+=h; const c2=S.clone().lerp(E,.72); c2.y+=h;
   const sc=SCHED[c.code];
+  if(sc&&sc.lost){ // a route Changi once had: a marker only, no line
+    const pick=new THREE.Mesh(new THREE.SphereGeometry(.9,8,8),new THREE.MeshBasicMaterial({visible:false}));
+    pick.position.copy(E); pick.userData.city=c; scene.add(pick); pickables.push(pick);
+    const pl=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.5,16),new THREE.MeshBasicMaterial({transparent:true}));
+    pl.position.set(E.x,0.7,E.z); scene.add(pl); c.pillar=pl; c.E=E; c.top=new THREE.Vector3(E.x,1.15,E.z);
+    return;
+  }
   if(sc&&sc.connect){ // no Changi flight: dotted link from the usual place you change planes
     const hub=sc.hubs.map(x=>AIRPORTS[x[1]]).reduce((a,x)=>{const d=v=>Math.hypot(px(v[0])-E.x,pz(v[1])-E.z); return d(x)<d(a)?x:a;});
     const H=new THREE.Vector3(px(hub[0]),0.45,pz(hub[1]));
@@ -1768,7 +1778,7 @@ function drawGroundLabel(g){
 }
 const lineLabelsEl=document.getElementById('lineLabels');
 document.fonts.ready.then(()=>cities.forEach(c=>c.llW=0));
-cities.forEach(c=>{const d=document.createElement('div');d.className='ll';d.innerHTML=`${c.name}<span class="ll-code">${c.code}</span>`;lineLabelsEl.appendChild(d);c.ll=d;c.llPos=c.curve.getPointAt(.9).clone();});
+cities.forEach(c=>{const d=document.createElement('div');d.className='ll';d.innerHTML=`${c.name}<span class="ll-code">${c.code}</span>`;lineLabelsEl.appendChild(d);c.ll=d;c.llPos=c.curve?c.curve.getPointAt(.9).clone():c.top.clone();});
 let lineNamesOn=true;
 const regionGLs=REGIONS.filter(r=>REGION_ANCHORS[r.key]).map(r=>{const [lon,lat]=REGION_ANCHORS[r.key];
   const g=makeGroundLabel(r.name,r.zh,px(lon),pz(lat),{y:0.465,region:true,big:true}); g.r=r; return g;});
@@ -1872,13 +1882,21 @@ document.querySelectorAll('.sec').forEach(s=>{const k=s.dataset.sec, tg=s.queryS
 const panelEl=document.getElementById('panel'), grab=document.getElementById('grab');
 function openSheet(s){ if(!isPhone()) return; if(s==='half'&&panelEl.dataset.sheet==='full') return; panelEl.dataset.sheet=s; }
 // on a phone the card sits in the sheet; keep the sheet small so the map still shows
-{let y0=null,h0=0,moved=false;
- grab.addEventListener('pointerdown',e=>{if(!isPhone())return; y0=e.clientY; h0=panelEl.getBoundingClientRect().height; moved=false; grab.setPointerCapture(e.pointerId); panelEl.classList.add('dragging');});
- grab.addEventListener('pointermove',e=>{if(y0==null)return; const dy=e.clientY-y0; if(Math.abs(dy)>4) moved=true; panelEl.style.height=Math.max(120,Math.min(innerHeight*.9,h0-dy))+'px';});
- grab.addEventListener('pointerup',e=>{if(y0==null)return; panelEl.classList.remove('dragging');
+{let y0=null,h0=0,moved=false,src=null;
+ const SNAP=['peek','half','full'];
+ const start=e=>{if(!isPhone())return;
+   if(e.target.closest('button:not(.grab), a, input, .row, .chip, .seg')) return;   // don't hijack taps on controls
+   src=e.currentTarget; y0=e.clientY; h0=panelEl.getBoundingClientRect().height; moved=false;
+   src.setPointerCapture(e.pointerId); panelEl.classList.add('dragging');};
+ const move=e=>{if(y0==null)return; const dy=e.clientY-y0; if(Math.abs(dy)>4) moved=true;
+   panelEl.style.height=Math.max(110,Math.min(innerHeight*.9,h0-dy))+'px'; e.preventDefault();};
+ const end=()=>{if(y0==null)return; panelEl.classList.remove('dragging');
    const hNow=panelEl.getBoundingClientRect().height; panelEl.style.height=''; y0=null;
-   if(!moved){const order=['peek','half','full']; panelEl.dataset.sheet=order[(order.indexOf(panelEl.dataset.sheet)+1)%3]; return;}
-   const f=hNow/innerHeight; panelEl.dataset.sheet=f<.3?'peek':f<.68?'half':'full';});}
+   if(!moved){panelEl.dataset.sheet=SNAP[(SNAP.indexOf(panelEl.dataset.sheet)+1)%3]; return;}
+   const f=hNow/innerHeight; panelEl.dataset.sheet=f<.3?'peek':f<.68?'half':'full';};
+ [grab, document.querySelector('.p-head')].forEach(el=>{
+   el.addEventListener('pointerdown',start); el.addEventListener('pointermove',move);
+   el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);});}
 
 function render(){
   chipsEl.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===airlineFilter)));
