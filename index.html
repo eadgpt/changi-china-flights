@@ -350,6 +350,9 @@ body[data-side="right"] #helpCard{right:auto;left:16px}
   .link{min-height:36px}
   #showPanel{top:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:16px}
   #themeBtn{bottom:auto;top:calc(14px + env(safe-area-inset-top,0px));right:14px;left:auto}
+  /* "?" sits under the theme button, clear of the bottom sheet */
+  #helpBtn,body[data-side] #helpBtn{bottom:auto;top:calc(64px + env(safe-area-inset-top,0px));right:14px;left:auto}
+  #helpCard,body[data-side] #helpCard{bottom:auto;top:calc(114px + env(safe-area-inset-top,0px));right:14px;left:auto;max-height:calc(100vh - 140px);overflow-y:auto}
 
 
   h1{font-size:26px}
