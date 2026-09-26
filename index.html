@@ -534,7 +534,7 @@ body[data-side="right"] #helpCard{right:auto;left:16px}
           <button type="button" id="sideRight" aria-pressed="false">Right</button>
           <button type="button" id="sideHide" aria-pressed="false">Hide</button>
         </div></div>
-      <div class="ctl"><span class="ctl-k">Borders</span>
+      <div class="ctl" id="bCtl"><span class="ctl-k" id="bCtlK">Borders</span>
         <div class="seg" role="group" aria-label="Borders">
           <button type="button" id="bRegion" aria-pressed="true">Regions</button>
           <button type="button" id="bProv" aria-pressed="true">Provinces</button>
@@ -2563,6 +2563,11 @@ factEl.onclick=e=>{if(e.target===factEl) closeFact();};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&!factEl.hidden) closeFact();},{signal:LIVE.signal});
 {let t='auto';try{t=localStorage.getItem('cc_theme')||'auto';}catch(e){} setTheme(THEMES.includes(t)?t:'auto');}
 const bR=document.getElementById('bRegion'), bP=document.getElementById('bProv');
+// only offer a button when this country has something for it to show (lines or area names)
+{const lr=(LINES.region||[]).length, lp=(LINES.prov||[]).length, hasR=lr||regionGLs.length, hasP=lp||provGLs.length;
+ bR.hidden=!hasR; bP.hidden=!hasP; document.getElementById('bCtl').hidden=!hasR&&!hasP;
+ document.getElementById('bCtlK').textContent=lr||lp?'Borders':'Area names';
+ [bR,bP].forEach(b=>b.setAttribute('aria-pressed','true'));}   // a new country starts with everything shown
 bR.onclick=()=>{const on=!regionBorders.visible; regionBorders.visible=on; regionGLs.forEach(g=>g.mesh.visible=on); bR.setAttribute('aria-pressed',String(on));};
 bP.onclick=()=>{provBorders.visible=!provBorders.visible; provGLs.forEach(g=>g.mesh.visible=provBorders.visible); bP.setAttribute('aria-pressed',String(provBorders.visible));};
 document.querySelectorAll('[data-feel]').forEach(b=>b.onclick=()=>setFeel(b.dataset.feel));
