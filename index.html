@@ -438,6 +438,7 @@ body[data-side="right"] #helpCard{right:auto;left:16px}
 .in-exp a{font-size:12px;color:var(--ink-2)}
 .in-note{font-size:12.5px;color:var(--ink-2);margin:10px 0 0}
 .in-full{margin-top:10px}
+.in-top{margin-top:16px}
 .in-news li{line-height:1.45}
 .in-news a{color:var(--ink);font-weight:600;text-decoration:none}
 .in-news a:hover{text-decoration:underline}
@@ -2572,6 +2573,7 @@ function insightsPage(){
   return `<div class="fs-top"><div><div class="eyebrow">Insights · SIN Changi → ${C.length} countries</div>
       <h2>What the map tells us</h2><p class="fs-sub">Patterns across every flight on this map, plus what airport experts say. Numbers work themselves out from the latest timetables (${fd(latest)}).</p></div>
       <div class="fs-act"><button class="btn" id="insPrint" type="button">Print / save PDF</button><button class="x" id="insClose" type="button" aria-label="Close">×</button></div></div>
+    <section class="in-full in-top" id="insNews"><h3>Latest headlines <span class="src">collected automatically every day</span></h3><p class="in-note">Loading…</p></section>
     <div class="fs-tiles">
       ${tile(T.tot.toLocaleString(),'flights a week')}${tile(cityCount,'airports with direct flights')}${tile(allAir.size,'airlines flying')}${tile(pct(T.sg,T.tot)+'%','flown by Singapore Airlines + Scoot')}
       ${tile(pct(T.bud,T.tot)+'%','flown by budget airlines')}${tile(C.reduce((t,c)=>t+c.solo.length,0),'cities with only one airline')}${tile(allLost.length,'routes dropped','lost')}${tile(C.reduce((t,c)=>t+c.gaps.length,0),'airports with no direct flight','grey')}
@@ -2595,8 +2597,7 @@ function insightsPage(){
       <section><h3>Changi's wish list</h3><table class="fs-t"><tbody>${targets.map(t=>`<tr><td>${t.city}</td><td>${t.country}</td><td>${t.onMap?(t.gap?'<span class="fs-tag soon">Gap on map</span>':'<span class="fs-tag ok">Now served</span>'):'<span class="fs-tag">Not on map</span>'}</td><td style="font-size:12.5px;color:var(--ink-2)">${t.when}</td></tr>`).join('')}</tbody></table>
         <p class="src">${(I.targets||{}).said||''} <a href="${(I.targets||{}).url||'#'}" target="_blank" rel="noopener">Source</a></p></section>
     </div>
-    <section class="in-full" id="insNews"><h3>Latest headlines <span class="src">collected automatically every day</span></h3><p class="in-note">Loading…</p></section>
-    ${(I.experts||[]).length?`<section class="in-full"><h3>What the experts say <span class="src">checked ${fd(I.checked)}, kept up to date by hand</span></h3><div class="in-exp">${I.experts.map(e=>`<article class="${e.tone||''}"><h4>${e.head}</h4><p>${e.text}</p><a href="${e.url}" target="_blank" rel="noopener">${e.src} ↗</a></article>`).join('')}</div></section>`:''}
+    ${(I.experts||[]).length?`<section class="in-full"><h3>What the experts say <span class="src">refreshed by hand once a month · last checked ${fd(I.checked)}</span></h3><div class="in-exp">${I.experts.map(e=>`<article class="${e.tone||''}"><h4>${e.head}</h4><p>${e.text}</p><a href="${e.url}" target="_blank" rel="noopener">${e.src} ↗</a></article>`).join('')}</div></section>`:''}
     <p class="in-note">How this page updates: every number, chart and "what the numbers say" line is worked out from the map's timetables each time it opens — refresh a country's timetable and this page follows. Only the expert notes and wish list are typed in by hand. Budget = low-cost airlines as listed in the notes file.</p>`;
 }
 {const insEl=document.getElementById('ins'), insIn=document.getElementById('insIn'), insBtn=document.getElementById('insBtn');
