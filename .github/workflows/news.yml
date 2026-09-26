@@ -1,0 +1,22 @@
+name: Daily Changi headlines
+on:
+  schedule:
+    - cron: '0 22 * * *'   # 6am Singapore time, every day
+  workflow_dispatch:        # "Run workflow" button for a manual run
+permissions:
+  contents: write
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python news.py
+      - name: Save news.json if it changed
+        run: |
+          git config user.name "news bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add news.json
+          git diff --cached --quiet || (git commit -m "Daily headlines" && git push)
