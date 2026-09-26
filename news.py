@@ -18,11 +18,17 @@ FEEDS = [
     ('Business Traveller', 'https://www.businesstraveller.com/feed/'),
     ('TTG Asia', 'https://www.ttgasia.com/feed/'),
     ('Aviation A2Z', 'https://aviationa2z.com/index.php/feed/'),
+    ('Straits Times', 'https://www.straitstimes.com/news/singapore/rss.xml'),
+    ('Straits Times', 'https://www.straitstimes.com/news/business/rss.xml'),
+    ('Business Times', 'https://www.businesstimes.com.sg/rss/transport'),
+    ('The Edge Singapore', 'https://www.theedgesingapore.com/rss.xml'),
+    ('FlightGlobal', 'https://www.flightglobal.com/rss'),
 ]
-# a story must mention Singapore/Changi AND be about flying somewhere
-PLACE = re.compile(r'\b(changi|singapore|scoot)\b', re.I)
-TOPIC = re.compile(r'\b(route|routes|flights?|airlines?|launch\w*|resum\w*|restor\w*|axe[sd]?|cuts?|boosts?|adds?|ends?|drops?|services?|frequenc\w*|capacity|schedule|airport|terminal|fees?|tax|levy)\b', re.I)
-SKIP = re.compile(r'\b(krisflyer|miles|points|credit card|citi|lounge|award|sale|promo\w*|deals?|review|seats?|cabins?|first class|business class|priority pass|mro)\b', re.I)
+# the headline must name Singapore/Changi AND be about flying; judged on the headline only
+PLACE = re.compile(r'\b(changi|singapore|scoot|sia)\b', re.I)
+AVIA = re.compile(r'\b(scoot|passengers?|airlines?|flights?|routes?|airports?|terminals?|carriers?|aircraft|jets?|aviation|air travel|levy)\b', re.I)
+SKIP = re.compile(r'\b(krisflyer|miles|points|credit card|citi|lounge|award|sale|promo\w*|deals?|review|seats?|cabins?|first class|business class|priority pass|mro|prison|jail|court|charged|crash\w*|collid\w*|drugs?|smuggl\w*|arrested|beach)\b', re.I)
+def wanted(title): return bool(PLACE.search(title) and AVIA.search(title) and not SKIP.search(title))
 COUNTRIES = {'China': r'china|chinese|beijing|shanghai|guangzhou|shenzhen|chengdu|xiamen|hangzhou|urumqi|hohhot',
              'Hong Kong': r'hong kong|macau', 'Japan': r'japan|tokyo|osaka|nagoya|fukuoka|sapporo|okinawa',
              'South Korea': r'korea|seoul|busan|jeju', 'Thailand': r'thailand|thai|bangkok|phuket|chiang mai|krabi',
@@ -43,12 +49,12 @@ def fetch(name, url):
         try: when = email.utils.parsedate_to_datetime(text(it, 'pubDate')).astimezone(timezone.utc)
         except Exception: when = datetime.now(timezone.utc)
         blob = f'{title} {desc}'
-        if not PLACE.search(title) or not TOPIC.search(title) or SKIP.search(title):   # judged on the headline only
+        if not wanted(title):
             continue
         tags = [c for c, rx in COUNTRIES.items() if re.search(rx, blob, re.I)]
         yield {'title': title, 'url': link, 'src': name, 'date': when.strftime('%Y-%m-%d'), 'tags': tags}
 
-old = json.loads(OUT.read_text())['items'] if OUT.exists() else []
+old = [i for i in (json.loads(OUT.read_text())['items'] if OUT.exists() else []) if wanted(i['title'])]   # re-check old ones when the rules change
 seen = {i['url'] for i in old}
 new = []
 for name, url in FEEDS:
