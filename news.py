@@ -33,7 +33,9 @@ COUNTRIES = {'China': r'china|chinese|beijing|shanghai|guangzhou|shenzhen|chengd
              'Hong Kong': r'hong kong|macau', 'Japan': r'japan|tokyo|osaka|nagoya|fukuoka|sapporo|okinawa',
              'South Korea': r'korea|seoul|busan|jeju', 'Thailand': r'thailand|thai|bangkok|phuket|chiang mai|krabi',
              'Malaysia': r'malaysia|kuala lumpur|penang|sabah|sarawak|johor|langkawi', 'Indonesia': r'indonesia|jakarta|bali|surabaya|medan|batam|aceh',
-             'Philippines': r'philippine|manila|cebu|clark|davao', 'Vietnam': r'vietnam|hanoi|ho chi minh|da nang|hai phong|da lat|phu quoc'}
+             'Philippines': r'philippine|manila|cebu|clark|davao', 'Vietnam': r'vietnam|hanoi|ho chi minh|da nang|hai phong|da lat|phu quoc',
+             'India': r'india\b|indian (?!ocean)|indigo|air india|delhi|mumbai|chennai|bengaluru|bangalore|hyderabad|kolkata|kochi|ahmedabad|amritsar|coimbatore|trichy|tiruchirappalli|thiruvananthapuram|visakhapatnam|vijayawada|guwahati|lucknow|jaipur|goa\b|pune\b'}
+def tag(text): return [c for c, rx in COUNTRIES.items() if re.search(r'\b(?:' + rx + ')', text, re.I)]
 KEEP_DAYS, KEEP_MAX = 120, 40
 OUT = Path(__file__).parent / 'news.json'
 
@@ -51,10 +53,11 @@ def fetch(name, url):
         blob = f'{title} {desc}'
         if not wanted(title):
             continue
-        tags = [c for c, rx in COUNTRIES.items() if re.search(rx, blob, re.I)]
+        tags = tag(blob)
         yield {'title': title, 'url': link, 'src': name, 'date': when.strftime('%Y-%m-%d'), 'tags': tags}
 
 old = [i for i in (json.loads(OUT.read_text())['items'] if OUT.exists() else []) if wanted(i['title'])]   # re-check old ones when the rules change
+for i in old: i['tags'] = sorted(set(i.get('tags', [])) | set(tag(i['title'])))   # new countries tag old stories too
 seen = {i['url'] for i in old}
 new = []
 for name, url in FEEDS:
